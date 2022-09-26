@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>One Time Secret</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script>
+        function randomSecret () {
+            document.getElementById('secret').value = '';
+            document.getElementById('form').submit();
+        }
+    </script>
+</head>
+
+<body>
+    <form id="form" method="post" action="/new">
+        message: <input type="text" name="message" />
+        <br>
+        secret: <input id="secret" type="text" name="content" />
+        <br>
+        <input type="submit" value="Create" />
+    </form>
+
+    <button onclick="randomSecret()">Random Secret</button>
+</body>
+
+</html>
