@@ -1,15 +1,9 @@
-<!DOCTYPE html>
-<html>
+{{template "header" .}}
 
-<head>
-    <title>One Time Secret</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-</head>
+{{template "title" "Secret Not Found"}}
 
-<body>
-    <a href="/">Home</a>
-    <br>
-    <p>Your secret could not be found - it might already have been claimed.</p>
-</body>
+<p>Your secret could not be found - it might already have been claimed.</p>
 
-</html>
+<a href="/"><button>Create a new secret</button></a>
+
+{{template "footer" .}}

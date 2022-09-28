@@ -1,27 +1,40 @@
-<!DOCTYPE html>
-<html>
+{{template "header" .}}
 
-<head>
-    <title>One Time Secret</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script>
-        function randomSecret () {
-            document.getElementById('secret').value = '';
-            document.getElementById('form').submit();
-        }
-    </script>
-</head>
+<script>
+    async function randomSecret () {
+        let resp = await fetch('/random');
+        let secret = await resp.text();
+        let secretElem = document.getElementById('secret');
+        secretElem.value = secret;
+        navigator.clipboard.writeText(secret);
+        secretElem.select();
+        document.getElementById("copiedText").hidden = false;
+    }
 
-<body>
-    <form id="form" method="post" action="/new">
-        message: <input type="text" name="message" />
-        <br>
-        secret: <input id="secret" type="text" name="content" />
-        <br>
-        <input type="submit" value="Create" />
-    </form>
+    function hideP () {
+        document.getElementById("copiedText").hidden = true;
+    }
+</script>
 
-    <button onclick="randomSecret()">Random Secret</button>
-</body>
+{{template "title" "Create a new secret"}}
 
-</html>
+<form id="form" method="post" action="/new">
+    <div style="height:80px;">
+        <div class="field border suffix">
+            <input onInput="hideP()" id="secret" type="text" name="content" placeholder="Secret" />
+            <i style="z-index:100;" onclick="randomSecret()">casino</i>
+            <span class="helper">Leave empty to receive only the hash of a random secret.</span>
+
+            <p style="padding-top:15px;" id="copiedText" hidden>Secret copied to clipboard.</p>
+        </div>
+    </div>
+
+    <div class="field border">
+        <input type="text" name="message" placeholder="Message" />
+        <span class="helper">Optional</span>
+    </div>
+
+    <button>Create</button>
+</form>
+
+{{template "footer" .}}

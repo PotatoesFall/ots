@@ -2,7 +2,6 @@ package app
 
 import (
 	"errors"
-	"sync"
 
 	"github.com/PotatoesFall/ots/domain"
 )
@@ -17,37 +16,34 @@ type App interface {
 	// NewSecret creates a new secret and returns the ID
 	NewSecret(domain.NewSecret) int
 
-	// NewRandomSecret generates a random secret, creates it and returns the ID
-	NewRandomSecret(message string) int
+	// GenerateRandomSecret makes a random secret
+	GenerateRandomSecret() string
 
 	// ClaimSecret claims a secret.
 	ClaimSecret(id int) (domain.Secret, error)
 
-	// SecretExists checks whether a secret exists (and is not claimed)
-	SecretExists(id int) bool
+	// CheckSecret checks whether a secret exists (and is not claimed). It retuns the hash if not claimed yet.
+	CheckSecret(id int) (hash string, exists bool)
 }
 
 type app struct {
-	sync.Mutex // locking for claims
-
 	repo Repo
 }
 
 func (a *app) NewSecret(s domain.NewSecret) int {
+	if s.Content == `` {
+		s.Content = randomSecret()
+		s.Hash = hash(s.Content)
+	}
+
 	return a.repo.Create(s)
 }
 
-func (a *app) NewRandomSecret(message string) int {
-	return a.repo.Create(domain.NewSecret{
-		Message: message,
-		Content: randomSecret(),
-	})
+func (a *app) GenerateRandomSecret() string {
+	return randomSecret()
 }
 
 func (a *app) ClaimSecret(id int) (domain.Secret, error) {
-	a.Lock()
-	defer a.Unlock()
-
 	secret, err := a.repo.Claim(id)
 	if err != nil && !errors.Is(err, ErrSecretNotFound) {
 		panic(err)
@@ -56,14 +52,20 @@ func (a *app) ClaimSecret(id int) (domain.Secret, error) {
 	return secret, err
 }
 
-func (a *app) SecretExists(id int) bool {
-	return a.repo.Exists(id)
+func (a *app) CheckSecret(id int) (string, bool) {
+	hash, err := a.repo.ClaimHash(id)
+	if err != nil && !errors.Is(err, ErrSecretNotFound) {
+		panic(err)
+	}
+
+	return hash, err == nil
 }
 
 type Repo interface {
 	Exists(id int) bool
 	Create(domain.NewSecret) int
 	Claim(id int) (domain.Secret, error)
+	ClaimHash(id int) (string, error)
 }
 
 func New(repo Repo) App {

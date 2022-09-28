@@ -1,6 +1,8 @@
 package views
 
-import "github.com/PotatoesFall/ots/domain"
+import (
+	"github.com/PotatoesFall/ots/domain"
+)
 
 type ClaimSecretResponse struct {
 	ID      int    `json:"id"`
@@ -14,4 +16,9 @@ func NewClaimSecretResponse(s domain.Secret) ClaimSecretResponse {
 		Message: s.Message,
 		Content: s.Content,
 	}
+}
+
+type GetSecretResponse struct {
+	ID   int
+	Hash string
 }

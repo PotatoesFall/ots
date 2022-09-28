@@ -18,6 +18,7 @@ func Make(a app.App) http.Handler {
 
 	r.Get(`/`, getIndex)
 	r.Get(`/secret/{id}`, getSecret(a))
+	r.Get(`/random`, getRandom(a))
 	r.Post(`/new`, newSecret(a))
 	r.Post(`/claim/{id}`, claimSecret(a))
 
@@ -48,12 +49,20 @@ func getSecret(a app.App) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		idStr := chi.URLParam(r, `id`)
 		id, err := strconv.Atoi(idStr)
-		if err != nil || !a.SecretExists(id) {
+		hash, exists := a.CheckSecret(id)
+		if err != nil || !exists {
 			views.Render(w, `notfound`, nil)
 			return
 		}
 
-		views.Render(w, `secret`, id)
+		views.Render(w, `secret`, views.GetSecretResponse{ID: id, Hash: hash})
+	}
+}
+
+func getRandom(a app.App) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		secret := a.GenerateRandomSecret()
+		writeString(w, http.StatusOK, secret)
 	}
 }
 
@@ -64,12 +73,7 @@ func newSecret(a app.App) http.HandlerFunc {
 			return
 		}
 
-		var id int
-		if req.Content == `` {
-			id = a.NewRandomSecret(req.Message)
-		} else {
-			id = a.NewSecret(req.Secret())
-		}
+		id := a.NewSecret(req.Secret())
 
 		http.Redirect(w, r, `/secret/`+strconv.Itoa(id), http.StatusFound)
 	}
@@ -86,7 +90,7 @@ func claimSecret(a app.App) http.HandlerFunc {
 
 		secret, err := a.ClaimSecret(id)
 		if errors.Is(err, app.ErrSecretNotFound) {
-			noContent(w, http.StatusNotFound)
+			views.Render(w, `notfound`, nil)
 			return
 		}
 		if err != nil {

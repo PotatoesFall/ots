@@ -1,17 +1,29 @@
-<!DOCTYPE html>
-<html>
+{{template "header" .}}
 
-<head>
-    <title>One Time Secret</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-</head>
+{{template "title" "Your Secret"}}
 
-<body>
-    <a href="/">Home</a>
-    <br>
-    your secret: <input type="text" value="{{.Content}}" />
-    <br>
-    message: <input type="text" value="{{.Message}}" />
-</body>
+<script>
+    function copySecret () {
+        let secret = document.getElementById("secret");
+        secret.select();
+        navigator.clipboard.writeText(secret.value);
+        document.getElementById("copiedText").hidden = false;
+    }
+</script>
 
-</html>
+<p>{{.Message}}</p>
+
+<div style="height:75px;">
+    <div class="field border suffix">
+        <input id="secret" type="text" value="{{.Content}}" />
+        <i style="z-index:100;" onClick="copySecret()">content_copy</i>
+    </div>
+
+    <p id="copiedText" style="top:-30px;" hidden>Secret copied to clipboard.</p>
+</div>
+
+<div>
+    <a href="/"><button>Create a new secret</button></a>
+</div>
+
+{{template "footer" .}}

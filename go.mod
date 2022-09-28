@@ -6,5 +6,6 @@ require (
 	git.ultraware.nl/martin/graceful v1.0.0
 	github.com/go-chi/chi v1.5.4
 	github.com/lib/pq v1.10.7
+	golang.org/x/crypto v0.0.0-20220926161630-eccd6366d1be
 	golang.org/x/exp v0.0.0-20220921164117-439092de6870
 )
